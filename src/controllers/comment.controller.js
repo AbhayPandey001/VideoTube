@@ -1,5 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose"
 import { Comment } from "../models/comment.model.js"
+import { Video } from "../models/video.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
@@ -8,6 +9,55 @@ const getVideoComments = asyncHandler(async (req, res) => {
     //TODO: get all comments for a video
     const { videoId } = req.params
     const { page = 1, limit = 10 } = req.query
+
+    if (!videoId || !isValidObjectId(videoId)) {
+        throw new ApiError(400, 'Not a valid videoid')
+    }
+
+   const comments = Comment.aggregate([
+    {
+        $match: {
+            video: new mongoose.Types.ObjectId(videoId)
+        }
+    },
+    {
+        $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "ownerDetails"
+        }
+    },
+    {
+        $unwind: "$ownerDetails"
+    },
+    {
+        $project: {
+            content: 1,
+            createdAt: 1,
+            owner: {
+                username: "$ownerDetails.username",
+                avatar: "$ownerDetails.avatar"
+            }
+        }
+    },
+    {
+        $sort: { createdAt: -1 }
+    }
+])
+
+    const options = {
+        page: parseInt(page) ,
+        limit: parseInt(limit) 
+    } 
+
+    const result = await Comment.aggregatePaginate(comments, options)
+
+    if (result.docs.length === 0) {
+        throw new ApiError(404, "Error while fetching comments")
+    }
+
+    return res.status(200).json(new ApiResponse(200, result, "Comments fetched successfully"))
 
 })
 
@@ -96,7 +146,7 @@ const deleteComment = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200 , comment , 'Comment deleted succesfully'))
+        .json(new ApiResponse(200, comment, 'Comment deleted succesfully'))
 })
 
 export {

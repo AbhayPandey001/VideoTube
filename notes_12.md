@@ -15,7 +15,7 @@ agar match hogya toh new access token bna dete hain .
 
 # Login feature
 controllers mein user controllers wali file mein karna hai.     
-sabse pehle ek method bana lo loginUser naam ka useko asyncHandler me daal do , login ka sara code isi method mein likhege.     
+sabse pehle ek method bana lo loginUser naam ka usko asyncHandler me daal do , login ka sara code isi method mein likhege.     
 Algorithm for login :: 
 - req.body se data lelo
 - username ya email mil jayega , hai ki nahi check karlo

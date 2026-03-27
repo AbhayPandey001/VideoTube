@@ -27,7 +27,7 @@ and documents that are output from a stage are passed to the next stage.
 
 syntax :
 ```
-db.___.aggregate([   ----->  Db ke baad jispe laga rahe hain woh likhna hai jaise users / orders etc 
+db.___.aggregate([   ----->  Db ke naam ke baad jispe laga rahe hain woh likhna hai jaise users / orders etc 
     {} , {}          ----->  Array ke andr objects hote hain (array of objects)
 ])                   ----->  Har ek object ek stage / pipeline hai
 ```
