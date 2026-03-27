@@ -3,7 +3,6 @@ import fs from 'fs'
 import { config } from 'dotenv';
 
 config()
-console.log(process.env.PORT)
 cloudinary.config({ 
         cloud_name: 'mainabhayhoon', 
         api_key: 719417936975164, 
