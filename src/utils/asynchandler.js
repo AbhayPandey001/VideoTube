@@ -13,7 +13,7 @@ export {asyncHandler}
 
 
 
-/* another approach using try catch
+/* another approach using try catch(easy one)
 const asynchandler = (fn) => async (req , res , next) => {  // iska mtlb ek fn leke usko ek aur fn mein pass kar rahein hain , higher order function bolte hain isko.
     try{
         await fn(req , res , next)
