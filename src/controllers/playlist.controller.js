@@ -42,7 +42,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Invalid userId')
     }
 
-    const playlists =  Playlist.aggregate([
+    const playlists = Playlist.aggregate([
         {
             $match: {
                 owner: new mongoose.Types.ObjectId(userId)
@@ -62,7 +62,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         },
         {
             $project: {
-                _id :1 ,
+                _id: 1,
                 name: 1,
                 description: 1,
                 totalVideos: 1,
@@ -72,11 +72,11 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     ])
 
     const options = {
-        page : 1 ,
-        limit : 10 
+        page: 1,
+        limit: 10
     }
 
-    const userPlaylists = await Playlist.aggregatePaginate(playlists , options)
+    const userPlaylists = await Playlist.aggregatePaginate(playlists, options)
 
     return res
         .status(200)
@@ -189,7 +189,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Invalid playlist')
     }
 
-    const playlist = await Playlist.findByIdAndDelete(playlistId)
+    const playlist = await Playlist.findById(playlistId)
     if (!playlist) {
         throw new ApiError(404, 'Playlist not found ')
     }
@@ -199,9 +199,11 @@ const deletePlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(403, 'Not authorized to delete this playlist');
     }
 
+    await Playlist.findByIdAndDelete(playlistId);
+
     return res
         .status(200)
-        .json(new ApiResponse(200, playlist, 'Deleted playlist successfully'))
+        .json(new ApiResponse(200, {}, 'Deleted playlist successfully'))
 })
 
 const updatePlaylist = asyncHandler(async (req, res) => {
@@ -230,9 +232,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
             owner: req.user._id
         },
         {
-            $set: {
-                updateDetails
-            }
+            $set: updateDetails
         },
         { new: true }
     )
