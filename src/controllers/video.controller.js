@@ -8,8 +8,58 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
     //TODO: get all videos based on query, sort, pagination
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+
+    if (!userId || !isValidObjectId(userId)) {
+        throw new ApiError(400, 'Invalid userid')
+    }
+
+    const matchStage = {
+        owner: new mongoose.Types.ObjectId(userId),
+        isPublished: true
+    }
+
+    if (query) {
+        matchStage.title = { $regex: query, $options: "i" }
+    }
+
+    const sortStage = {}
+
+    if (sortBy) {
+        sortStage[sortBy] = sortType === "asc" ? 1 : -1
+    } else {
+        sortStage.createdAt = -1
+    }
+
+    const videos = Video.aggregate([
+        {
+            $match: matchStage
+        },
+        {
+            $sort: sortStage
+        },
+        {
+            $project: {
+                _id: 1,
+                title: 1,
+                thumbnail: 1,
+                views: 1,
+                createdAt: 1
+            }
+        }
+    ])
+
+    const options = {
+        page: parseInt(page),
+        limit: parseInt(limit)
+    }
+
+    const paginatedVideos = await Video.aggregatePaginate(videos, options)
+
+    return res.status(200).json(
+        new ApiResponse(200, paginatedVideos, "Videos fetched successfully")
+    )
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -149,7 +199,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     if (!video) {
         throw new ApiError(404, 'video not foundor Forbidden request')
     }
-    
+
     return res
         .status(200)
         .json(new ApiResponse(200, null, 'Video deleted succesfully'))
