@@ -83,26 +83,80 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
             $unwind: "$SubscriberDetails"
         },
         {
-    $project: {
-        _id: 0,
-        subscriber: "$subscriberDetails",
-        subscribedAt: "$createdAt"
-    }
-}
+            $project: {
+                _id: 0,
+                subscriber: "$subscriberDetails",
+                subscribedAt: "$createdAt"
+            }
+        }
     ])
 
-if (!channel.length) {
-    throw new ApiError(404, 'subscribers not found')
-}
+    if (!channel.length) {
+        throw new ApiError(404, 'subscribers not found')
+    }
 
-return res
-    .status(200)
-    .json(new ApiResponse(200, channel, 'Total subs found succesfully'))
+    return res
+        .status(200)
+        .json(new ApiResponse(200, channel, 'Total subs found succesfully'))
 })
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params
+    const { page = 1, limit = 10 } = req.query
+
+    if (!subscriberId || !isValidObjectId(subscriberId)) {
+        throw new ApiError(400, 'invalid subscriberId')
+    }
+
+    const channelList = Subscription.aggregate([
+        {
+            $match: {
+                subscriber: new mongoose.Types.ObjectId(subscriberId)
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'channel',
+                foreignField: '_id',
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            email: 1,
+                            avatar: 1
+                        }
+                    }
+                ],
+                as: 'userDetails'
+            }
+        },
+        {
+            $unwind: "$userDetails"
+        },
+        {
+            $project: {
+                _id: 0,
+                channel: {
+                    username: "$userDetails.username",
+                    email: "$userDetails.email",
+                    avatar: "$userDetails.avatar"
+                }
+            }
+        }
+    ])
+
+    const options = {
+        page: parseInt(page),
+        limit: parseInt(limit)
+    }
+
+    const subscribedChannels = await Subscription.aggregatePaginate(channelList, options)
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, subscribedChannels, 'Subscriptions list fetched successfully'))
 })
 
 export {
