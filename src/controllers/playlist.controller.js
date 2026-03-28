@@ -35,8 +35,52 @@ const createPlaylist = asyncHandler(async (req, res) => {
 })
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
-    const { userId } = req.params
     //TODO: get user playlists
+    const { userId } = req.params
+
+    if (!userId || !isValidObjectId(userId)) {
+        throw new ApiError(400, 'Invalid userId')
+    }
+
+    const playlists =  Playlist.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(userId)
+            }
+        },
+        {
+            $sort: {
+                createdAt: -1
+            }
+        },
+        {
+            $addFields: {
+                totalVideos: {
+                    $size: "$videos"
+                }
+            }
+        },
+        {
+            $project: {
+                _id :1 ,
+                name: 1,
+                description: 1,
+                totalVideos: 1,
+                createdAt: 1
+            }
+        }
+    ])
+
+    const options = {
+        page : 1 ,
+        limit : 10 
+    }
+
+    const userPlaylists = await Playlist.aggregatePaginate(playlists , options)
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, userPlaylists, 'Playlists fetched Successfully'))
 })
 
 const getPlaylistById = asyncHandler(async (req, res) => {
