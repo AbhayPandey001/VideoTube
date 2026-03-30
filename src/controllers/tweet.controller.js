@@ -57,10 +57,6 @@ const getUserTweets = asyncHandler(async (req, res) => {
         }
     ])
 
-    if (!tweet.length) {
-        throw new ApiError(404, 'No tweets found')
-    }
-
     // pagination 
     const options = {
         page: 1,
