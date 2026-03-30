@@ -225,13 +225,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true,
       // aisa karne se server hi modify kar payega sirf cookies ko and not the frontend as cookies could be modified in frontend
     };
-    const { accessToken, refreshToken  } =
+    const { accessToken, refreshToken } =
       await generateAccessAndRefreshTokens(user._id);
 
     return res
       .status(200)
       .cookie('accessToken', accessToken, options)
-      .cookie('refreshToken', refreshToken , options)
+      .cookie('refreshToken', refreshToken, options)
       .json(
         new ApiResponse(
           200,
@@ -248,6 +248,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const changeCurrentPassword = asyncHandler(async (req, res) => {
   // logged in hai ki nai checking , etc ke liye toh middleware hai hi jwt wala
   const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(400, "Both old and new password are required");
+  }
   // agr password change kr pa raha toh logged in hoga pakka and cookies hongi , ab waha se middleware laga ke req.user ka access lelenge and usse user mil jayega
   // finding the user and checking if the oldpass is correct
   const user = await User.findById(req.user?._id);
