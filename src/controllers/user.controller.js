@@ -285,7 +285,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
   // find kro us user ko (directly using find and update)
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id, // jo find krna hai woh
     {
       // mongo db operator hai set
