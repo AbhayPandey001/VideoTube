@@ -51,7 +51,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
         },
         {
             $match: {
-                "$likedVideoDetails.owner": new mongoose.Types.ObjectId(channelId)
+                "likedVideoDetails.owner": new mongoose.Types.ObjectId(channelId)
             }
         },
         {
