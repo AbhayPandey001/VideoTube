@@ -392,7 +392,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: 'subscriptions',
-        localfield: '_id',
+        localField: '_id',
         foreignField: 'subscriber',
         as: 'subscribedTo',
         // ab ye sari fields ikkatha ho gayi hai ab unko count karna hai uske liye $size naam ka field hai
