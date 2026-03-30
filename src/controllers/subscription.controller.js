@@ -50,16 +50,16 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-    const { channelId } = req.params
+    const { subscriberId } = req.params
 
-    if (!channelId || !isValidObjectId(channelId)) {
+    if (!subscriberId || !isValidObjectId(subscriberId)) {
         throw new ApiError(400, "invalid channelId")
     }
 
     const channel = await Subscription.aggregate([
         {
             $match: {
-                channel: new mongoose.Types.ObjectId(channelId)
+                channel: new mongoose.Types.ObjectId(subscriberId)
             }
         },
         {
